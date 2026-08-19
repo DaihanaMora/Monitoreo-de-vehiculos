@@ -1,0 +1,16 @@
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Entorno
+.env
+.env.local
+
+# Vercel
+.vercel/
+
+# Node (por si en el futuro se agrega alguna herramienta de build)
+node_modules/
+npm-debug.log*

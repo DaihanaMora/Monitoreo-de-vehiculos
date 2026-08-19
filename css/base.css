@@ -1,0 +1,121 @@
+/* ==========================================================================
+   Base — reset, tipografía y utilidades globales
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  transition: background-color var(--duration-slow) var(--ease-standard),
+              color var(--duration-slow) var(--ease-standard);
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Números, coordenadas y timestamps siempre en monoespaciada tabular:
+   refuerza la lectura rápida bajo estrés en sala de control. */
+.mono,
+.stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ---- Enlace "saltar al contenido" (accesibilidad de teclado) ---- */
+.skip-link {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: var(--z-toast);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  border-radius: var(--radius-md);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  transform: translateY(-150%);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ---- Indicador de foco visible y consistente en toda la app ----
+   Nunca usamos outline: none sin este reemplazo. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Elementos con fondo propio (botones sólidos, tarjetas) usan además
+   un halo de sombra para que el foco se note incluso sobre fondos de color. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+/* ---- Utilidad para ocultar visualmente pero mantener accesible ---- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Scrollbar sutil (progresivo, no crítico) ---- */
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-color: var(--color-border-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
