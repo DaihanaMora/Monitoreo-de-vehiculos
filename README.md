@@ -13,7 +13,11 @@ interactivo, junto a una tarjeta de estado accesible y pulida.
 - [x] **Fase 1 — Scaffold + sistema de diseño**: estructura de carpetas, tokens
       (color, tipografía, espaciado, sombras, movimiento) para modo claro/oscuro,
       shell de la app con toggle de tema funcional.
-- [ ] Fase 2 — Proxy serverless (CORS-safe) hacia la API de Traccar.
+- [x] **Fase 2 — Proxy serverless (CORS-safe)**: función Vercel en
+      `api/traccar/[...path].js` que reenvía las peticiones a Traccar
+      servidor-a-servidor; cliente `js/api.js` con autenticación HTTP Basic
+      por petición y errores tipados (`invalid_credentials`,
+      `upstream_unreachable`, `upstream_timeout`, `network_error`).
 - [ ] Fase 3 — Autenticación + estado de carga (skeleton).
 - [ ] Fase 4 — Lista y selector de dispositivos.
 - [ ] Fase 5 — Mapa interactivo + marcador vectorial personalizado.
@@ -53,8 +57,44 @@ Luego abre `http://localhost:5173` (o el puerto que indique la herramienta).
 
 ## Variables de entorno / endpoints
 
-_Se documentan en la Fase 2, cuando se agregue el proxy serverless hacia
-Traccar._
+| Variable              | Obligatoria | Por defecto                  | Descripción                                   |
+|-----------------------|:-----------:|-------------------------------|------------------------------------------------|
+| `TRACCAR_SERVER_URL`  | No          | `https://demo4.traccar.org`   | Servidor Traccar al que apunta el proxy serverless. |
+
+Ver `.env.example`. El frontend nunca llama a Traccar directamente: siempre
+pasa por `/api/traccar/*` (mismo origen, sin CORS). Endpoints usados:
+`POST /api/session`, `GET /api/devices`, `GET /api/positions?deviceId=`.
+
+Autenticación: HTTP Basic por petición (no se usa cookie de sesión, para
+mantener el proxy sin estado). Las credenciales viven solo en memoria del
+navegador durante la sesión — nunca se persisten en `localStorage`.
+
+## Cómo ver la app funcionando (sin instalar nada)
+
+Como `api/traccar/[...path].js` es una función serverless, **no corre**
+abriendo `index.html` ni con un servidor estático simple — necesita el
+runtime de Vercel. Configuración única (2 minutos):
+
+1. Desde tu propia terminal (no dentro de este chat — el puente a tu
+   compu no tiene acceso a internet), en la carpeta del proyecto:
+   ```bash
+   git push -u origin main
+   ```
+2. Entra a [vercel.com](https://vercel.com), inicia sesión con tu cuenta
+   de GitHub, **Add New Project** → importa este repositorio → **Deploy**
+   (no requiere configuración adicional; `vercel.json` ya define la
+   función serverless).
+3. Listo: cada `git push` posterior vuelve a desplegar automáticamente y
+   obtienes una URL en vivo para probar cada fase nueva.
+
+_Verificación propia antes de entregar cada fase: como el sandbox donde
+yo trabajo tampoco tiene salida de red hacia `demo4.traccar.org`, probé el
+proxy y el cliente end-to-end contra un servidor Traccar simulado
+localmente (mismas rutas, mismas respuestas, mismos códigos de error) —
+login válido/ inválido, listado de dispositivos, posición y caída del
+servidor upstream. La verificación 100% real contra el servidor demo
+público ocurre en el primer despliegue de Vercel, que si tiene salida a
+internet sin restricciones._
 
 ## Sistema de diseño — paleta y accesibilidad de color
 

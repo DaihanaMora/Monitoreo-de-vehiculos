@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/traccar/[...path].js": {
+      "maxDuration": 10
+    }
+  }
+}
