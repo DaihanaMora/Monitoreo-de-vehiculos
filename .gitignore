@@ -11,6 +11,14 @@ Thumbs.db
 # Vercel
 .vercel/
 
-# Node (por si en el futuro se agrega alguna herramienta de build)
+# Node / Vite build
 node_modules/
 npm-debug.log*
+dist/
+dist-ssr/
+*.local
+
+# Configuración local de Claude Code -- no es parte del proyecto
+.claude/
+._bmad/
+._bmad-output/

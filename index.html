@@ -1,79 +1,49 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Monitor de Vehículo en Tiempo Real — Control Room</title>
-  <meta name="description" content="Monitor en tiempo real de flota vehicular sobre la API de Traccar: estado de conexión, velocidad, ubicación y mapa interactivo." />
-  <meta name="theme-color" content="#050505" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Monitor de Vehículo en Tiempo Real — Control Room</title>
+    <meta
+      name="description"
+      content="Monitor en tiempo real de flota vehicular sobre la API de Traccar: estado de conexión, velocidad, ubicación y mapa interactivo."
+    />
+    <meta name="theme-color" content="#0E1210" />
 
-  <!-- Fijamos el tema ANTES del primer paint para evitar parpadeo (FOUC) -->
-  <script>
-    (function () {
-      try {
-        var stored = localStorage.getItem("traccar-monitor:theme");
-        var theme = stored || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-        document.documentElement.setAttribute("data-theme", theme);
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
+    <!-- Fija el tema ANTES del primer paint (AD-8) para evitar parpadeo (FOUC).
+         Vive fuera del bundle de React a propósito: React monta después del
+         primer pintado y no puede evitar el FOUC por sí solo. -->
+    <script>
+      (function () {
+        try {
+          // Oscuro es el modo por defecto de la marca (Assets/desktop1.png,
+          // desktop2.png, movilResponsive*.png son todas oscuras) -- se
+          // respeta la elección GUARDADA del usuario si ya cambió el tema
+          // una vez, pero la primera visita NUNCA se decide por
+          // prefers-color-scheme del sistema operativo. Antes sí lo hacía:
+          // en un equipo con tema claro del sistema, la app arrancaba en
+          // claro sin que el usuario lo pidiera, lo que -- combinado con el
+          // toggle -- podía sentirse como "el icono de tema no cambia" (en
+          // realidad arrancaba en el estado opuesto al esperado).
+          var stored = localStorage.getItem("traccar-monitor:theme");
+          var theme = stored === "light" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="css/tokens.css" />
-  <link rel="stylesheet" href="css/base.css" />
-  <link rel="stylesheet" href="css/layout.css" />
-</head>
-<body>
-  <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
-
-  <header class="app-header">
-    <div class="app-brand">
-      <span class="app-brand__dot" aria-hidden="true"></span>
-      <span>
-        <span class="app-brand__title">Monitor de Vehículo</span>
-        <span class="app-brand__subtitle">Central de operaciones · tiempo real</span>
-      </span>
-    </div>
-
-    <button
-      id="theme-toggle"
-      class="theme-toggle"
-      type="button"
-      aria-pressed="false"
-      aria-label="Cambiar entre modo claro y modo oscuro"
-    >
-      <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M12 3v1.5M12 19.5V21M4.93 4.93l1.06 1.06M17.99 17.99l1.06 1.06M3 12h1.5M19.5 12H21M4.93 19.07l1.06-1.06M17.99 6.01l1.06-1.06" stroke-linecap="round"/>
-        <circle cx="12" cy="12" r="4.5"/>
-      </svg>
-      <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M20.5 14.5a8.5 8.5 0 1 1-9-11 7 7 0 0 0 9 11Z" stroke-linejoin="round"/>
-      </svg>
-      <span data-theme-label>Modo oscuro</span>
-    </button>
-  </header>
-
-  <main id="main-content" class="app-main">
-    <section class="panel" aria-labelledby="map-heading">
-      <h2 id="map-heading" class="visually-hidden">Mapa del vehículo</h2>
-      <p class="placeholder-note">
-        Aquí vivirá el mapa interactivo (Leaflet) — próxima fase del roadmap.
-      </p>
-    </section>
-
-    <section class="panel" aria-labelledby="status-heading">
-      <h2 id="status-heading" class="visually-hidden">Tarjeta de estado del vehículo</h2>
-      <p class="placeholder-note">
-        Aquí vivirá la tarjeta de estado (velocidad, conexión, última actualización) — próxima fase del roadmap.
-      </p>
-    </section>
-  </main>
-
-  <script src="js/theme.js"></script>
-</body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

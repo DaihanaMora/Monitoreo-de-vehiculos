@@ -1,0 +1,35 @@
+# Uso:
+#   docker compose up            -> modo dev, hot-reload en http://localhost:5173
+#   docker compose --profile prod up prod   -> modo producción local, http://localhost:8080
+#
+# TRACCAR_SERVER_URL es opcional (por defecto https://demo4.traccar.org,
+# ver .env.example).
+
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - TRACCAR_SERVER_URL=${TRACCAR_SERVER_URL:-https://demo4.traccar.org}
+    env_file:
+      - path: .env
+        required: false
+
+  prod:
+    profiles: ["prod"]
+    build:
+      context: .
+      target: prod
+    ports:
+      - "8080:8080"
+    environment:
+      - TRACCAR_SERVER_URL=${TRACCAR_SERVER_URL:-https://demo4.traccar.org}
+    env_file:
+      - path: .env
+        required: false

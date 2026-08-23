@@ -1,12 +1,13 @@
 /* ==========================================================================
    Design Tokens — Monitor de Vehículo en Tiempo Real
-   Fuente de la paleta: marca Simon Movilidad (simonmovilidad.com)
-     - Base:   #050505 (negro casi puro, meta theme-color de la marca)
-     - Acento: #75FBC6 (verde menta de marca)
-   Todas las combinaciones texto/fondo listadas abajo fueron verificadas
-   contra WCAG 2.1 AA (contraste ≥ 4.5:1 para texto normal, ≥ 3:1 para
-   componentes UI / texto grande). Ver README.md → "Accesibilidad de color"
-   para la tabla de contraste completa.
+   Dirección visual: "Calma Operativa" (ver .memlog.md de la spine de
+   arquitectura, AD-9). Fuente de la paleta: marca Simón Movilidad
+   (negro #050505 + acento menta #75FBC6), con las superficies grandes
+   suavizadas para reducir fatiga visual en turnos de 24h:
+     - Oscuro:  fondo de app/mapa #0E1210 (NO #050505 a pantalla completa)
+     - Claro:   fondo de app/mapa #F7FAF9 (NO #FFFFFF a pantalla completa)
+   Todas las combinaciones texto/fondo fueron verificadas contra WCAG 2.1 AA
+   (≥ 4.5:1 texto normal, ≥ 3:1 componentes UI / texto grande).
    ========================================================================== */
 
 :root {
@@ -21,7 +22,8 @@
   --mint-900: #02452B;
 
   /* ---- Superficie / fondo (modo oscuro, por defecto) ---- */
-  --color-bg: #050505;
+  --color-bg: #050505;           /* uso mínimo: chrome pequeño, nunca a pantalla completa */
+  --color-app-bg: #0E1210;       /* fondo grande de app/mapa — suavizado (AD-9) */
   --color-surface: #0E1210;
   --color-surface-raised: #161B19;
   --color-border: #232B28;
@@ -31,7 +33,7 @@
   --color-text-primary: #F2FBF7;
   --color-text-secondary: #9FB3AC;
   --color-text-tertiary: #67766F;
-  --color-text-on-accent: #050505; /* texto sobre botones/badges color acento */
+  --color-text-on-accent: #050505;
 
   /* ---- Acento y estados semánticos (modo oscuro) ---- */
   --color-accent: var(--mint-500);
@@ -47,17 +49,23 @@
   --color-warning: #FFB84D;
   --color-warning-dim: rgba(255, 184, 77, 0.14);
 
+  /* ---- Glow en superficies grandes (mapa, marco) — atenuado a propósito.
+     El glow "completo" solo se usa en elementos pequeños: punto de pulso,
+     anillo de foco, insignia de marca. ---- */
+  --glow-large-1: rgba(117, 251, 198, 0.035);
+  --glow-large-2: rgba(117, 251, 198, 0.018);
+
   /* ---- Tipografía ---- */
-  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-ui: "Manrope", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.8125rem;  /* 13px */
-  --text-base: 0.9375rem;/* 15px */
-  --text-md: 1.0625rem;  /* 17px */
-  --text-lg: 1.375rem;   /* 22px */
-  --text-xl: 1.75rem;    /* 28px */
-  --text-2xl: 2.25rem;   /* 36px */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-md: 1.0625rem;   /* 17px */
+  --text-lg: 1.375rem;    /* 22px */
+  --text-xl: 1.75rem;     /* 28px */
+  --text-2xl: 2.25rem;    /* 36px */
 
   --leading-tight: 1.2;
   --leading-normal: 1.5;
@@ -67,37 +75,38 @@
   --weight-bold: 700;
 
   /* ---- Espaciado (escala base 4px) ---- */
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-12: 3rem;    /* 48px */
-  --space-16: 4rem;    /* 64px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
 
-  /* ---- Bordes y radios ---- */
-  --radius-sm: 0.375rem;  /* 6px */
-  --radius-md: 0.625rem;  /* 10px */
-  --radius-lg: 1rem;      /* 16px */
+  /* ---- Bordes y radios (Calma Operativa: radios grandes tipo pill) ---- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1.25rem;
   --radius-full: 999px;
   --border-width: 1px;
 
-  /* ---- Sombras (glow sutil, pensado para fondos oscuros) ---- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-focus: 0 0 0 3px rgba(117, 251, 198, 0.35);
+  /* ---- Sombras ---- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.38), 0 0 18px var(--glow-large-1);
+  --shadow-focus: 0 0 0 3px rgba(117, 251, 198, 0.4);
 
   /* ---- Movimiento ---- */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-soft: cubic-bezier(0, 0, 0.2, 1);
   --duration-fast: 120ms;
   --duration-base: 220ms;
   --duration-slow: 400ms;
-  --duration-marker: 600ms; /* interpolación del marcador GPS */
+  --duration-marker: 600ms; /* interpolación de rotación del marcador GPS — AD-6 */
 
   /* ---- Capas ---- */
   --z-map: 0;
@@ -112,6 +121,7 @@
   color-scheme: light;
 
   --color-bg: #F7FAF9;
+  --color-app-bg: #F7FAF9;       /* off-white cálido de marca, nunca blanco puro a pantalla completa */
   --color-surface: #FFFFFF;
   --color-surface-raised: #FFFFFF;
   --color-border: #E1E8E5;
@@ -120,7 +130,7 @@
   --color-text-primary: #0A0F0C;
   --color-text-secondary: #4B5D56;
   --color-text-tertiary: #7C8D86;
-  --color-text-on-accent: #FFFFFF; /* mint-800 es oscuro en modo claro → texto blanco (7.35:1) */
+  --color-text-on-accent: #FFFFFF;
 
   --color-accent: var(--mint-800);
   --color-accent-strong: var(--mint-900);
@@ -135,9 +145,12 @@
   --color-warning: #8A5A00;
   --color-warning-dim: rgba(138, 90, 0, 0.10);
 
+  --glow-large-1: rgba(3, 99, 61, 0.03);
+  --glow-large-2: rgba(3, 99, 61, 0.015);
+
   --shadow-sm: 0 1px 2px rgba(16, 24, 20, 0.06);
-  --shadow-md: 0 4px 16px rgba(16, 24, 20, 0.08), 0 0 0 1px rgba(16, 24, 20, 0.04);
-  --shadow-lg: 0 12px 32px rgba(16, 24, 20, 0.12), 0 0 0 1px rgba(16, 24, 20, 0.05);
+  --shadow-md: 0 8px 20px rgba(16, 24, 20, 0.08);
+  --shadow-lg: 0 16px 36px rgba(16, 24, 20, 0.10);
   --shadow-focus: 0 0 0 3px rgba(3, 99, 61, 0.35);
 }
 
