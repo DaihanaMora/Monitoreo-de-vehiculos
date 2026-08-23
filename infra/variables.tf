@@ -1,7 +1,7 @@
 variable "github_repo" {
   description = "Repositorio de GitHub conectado al proyecto de Vercel, formato \"usuario/repo\"."
   type        = string
-  default     = "DaihanaMora/Monitor-de-Veh-culo-en-Tiempo-Real"
+  default     = "DaihanaMora/Monitoreo-de-vehiculos"
 }
 
 variable "traccar_server_url" {
