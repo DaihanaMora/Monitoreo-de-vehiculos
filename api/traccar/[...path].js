@@ -8,6 +8,30 @@
 
 import { proxyTraccarRequest } from "../_lib/traccarProxy.js";
 
+// Prefijo fijo del punto de montaje de esta función (coincide con la
+// carpeta real: api/traccar/[...path].js sirve todo bajo /api/traccar/).
+const MOUNT_PREFIX = "/api/traccar/";
+
+/**
+ * Deriva los segmentos de la ruta dinámica directamente de `req.url` en vez
+ * de `req.query.path` -- bug real encontrado en producción (Vercel, en este
+ * proyecto, nombra el parámetro de ruta dinámica como "...path" -- con los
+ * tres puntos incluidos -- en vez de "path", así que req.query.path siempre
+ * llegaba `undefined` y la ruta enviada a Traccar quedaba vacía, causando
+ * 404 en TODO login/consulta ya desplegado. Confirmado con un endpoint de
+ * diagnóstico temporal que expuso el req.url crudo. Parsear el propio
+ * req.url es inmune a cómo cada entorno nombre el parámetro -- mismo
+ * enfoque que ya usa vite-plugin-traccar-proxy.ts para el adaptador de
+ * desarrollo local (spine AD-14: misma forma de resolver la ruta en los
+ * tres adaptadores, no una lógica distinta por entorno).
+ */
+function pathSegmentsFromUrl(url) {
+  const queryIndex = url.indexOf("?");
+  const pathname = queryIndex >= 0 ? url.slice(0, queryIndex) : url;
+  const afterMount = pathname.startsWith(MOUNT_PREFIX) ? pathname.slice(MOUNT_PREFIX.length) : "";
+  return afterMount.split("/").filter(Boolean).map((segment) => decodeURIComponent(segment));
+}
+
 function serializeBody(req) {
   const contentType = req.headers["content-type"] || "";
   if (req.body === undefined || req.body === null || req.body === "") return undefined;
@@ -29,24 +53,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const segments = Array.isArray(req.query.path) ? req.query.path : [req.query.path].filter(Boolean);
+  const segments = pathSegmentsFromUrl(req.url);
   const queryIndex = req.url.indexOf("?");
   const search = queryIndex >= 0 ? req.url.slice(queryIndex) : "";
-
-  // ---- DIAGNÓSTICO TEMPORAL (quitar en cuanto se confirme la causa del
-  // 404 en producción) -- ?debug=1 devuelve lo que Vercel REALMENTE le
-  // pasa a esta función en vez de reenviar a Traccar, para confirmar si
-  // req.query.path llega poblado como se espera. ----
-  if (req.query.debug === "1") {
-    res.status(200).json({
-      rawUrl: req.url,
-      queryPath: req.query.path ?? null,
-      derivedSegments: segments,
-      derivedUpstreamPath: segments.join("/"),
-      serverUrlEnv: process.env.TRACCAR_SERVER_URL ?? null,
-    });
-    return;
-  }
 
   const result = await proxyTraccarRequest({
     method: req.method,
