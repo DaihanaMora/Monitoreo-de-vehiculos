@@ -121,9 +121,23 @@
   /* ---- Capas ---- */
   --z-map: 0;
   --z-panel: 10;
-  --z-header: 20;
-  --z-modal: 30;
-  --z-toast: 40;
+  /* 20 -- ANTES de que el mapa/tarjeta flotante usaran z-index:1000 (ver
+     components.css) esto bastaba. Pero .app-header (position:sticky, este
+     z-index) crea su PROPIO contexto de apilamiento -- todo lo que esté
+     adentro (como el desplegable de cuenta) queda "atrapado" comparando
+     como "20" contra .app-main, cuyos hijos con z-index:1000 (mapa,
+     tarjeta flotante) no tienen un contexto propio y comparan DIRECTO en
+     la raíz. Resultado: el header entero, popover incluido, pintaba
+     DEBAJO del mapa pese a que el popover tenía z-index:1001 -- ese valor
+     solo importaba adentro del contexto del header, nunca llegaba a
+     compararse con el mapa. Bug real, encontrado con un screenshot
+     directo del elemento (Playwright) que mostró tiles del mapa en vez
+     del propio popover. Fix: el header, como bloque, debe ganarle a
+     cualquier cosa del mapa -- mismo numero que el resto de overlays
+     "encima de todo" de la app, +1 para que nunca empate. */
+  --z-header: 1001;
+  --z-modal: 1002;
+  --z-toast: 1003;
 }
 
 /* ---- Modo claro ---- */

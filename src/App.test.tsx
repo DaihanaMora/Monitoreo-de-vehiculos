@@ -30,7 +30,10 @@ async function loginAsDaihana() {
   await user.type(screen.getByLabelText("Correo"), "d@x.com");
   await user.type(screen.getByLabelText("Contraseña"), "buena-clave");
   await user.click(screen.getByRole("button", { name: "Entrar" }));
-  await screen.findByText("Cerrar sesión");
+  // "Cerrar sesión" ahora vive adentro del desplegable de cuenta, cerrado
+  // por defecto -- el avatar (siempre visible) es la señal confiable de
+  // que ya se pasó la pantalla de login.
+  await screen.findByRole("button", { name: /^Cuenta de/ });
   return user;
 }
 

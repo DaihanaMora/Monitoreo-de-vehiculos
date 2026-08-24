@@ -7,6 +7,7 @@ import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useNow } from "./hooks/useNow";
 import { formatRelativeTime } from "./lib/relativeTime";
 import { ThemeToggle } from "./components/ThemeToggle/ThemeToggle";
+import { UserMenu } from "./components/UserMenu/UserMenu";
 import { LoginForm } from "./components/LoginForm/LoginForm";
 import { DeviceListSkeleton } from "./components/DeviceList/DeviceList";
 import { DeviceListPanel } from "./components/DeviceList/DeviceListPanel";
@@ -105,10 +106,6 @@ function ControlRoom() {
             </svg>
           </button>
           <Logo height="2.25rem" />
-          <span className="app-brand__divider" aria-hidden="true" />
-          <span className="app-brand__session">
-            Central de operaciones · {user?.name ?? user?.email}
-          </span>
         </div>
 
         <div className="live-indicator" aria-live="polite">
@@ -124,9 +121,7 @@ function ControlRoom() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
           <ThemeToggle />
-          <button type="button" className="btn btn--secondary" onClick={logout}>
-            Cerrar sesión
-          </button>
+          <UserMenu user={user} onLogout={logout} />
         </div>
       </header>
 

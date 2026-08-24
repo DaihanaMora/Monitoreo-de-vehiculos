@@ -43,7 +43,10 @@ export function ThemeToggle() {
           strokeLinejoin="round"
         />
       </svg>
-      <span>{isLight ? "Modo claro" : "Modo oscuro"}</span>
+      {/* Antes había un <span> visible con "Modo claro"/"Modo oscuro" --
+          pedido explícito de Daihana: solo el ícono. El nombre accesible
+          real sigue viniendo del aria-label de arriba, así que quitar el
+          texto visible no le quita nada a un lector de pantalla. */}
     </button>
   );
 }
