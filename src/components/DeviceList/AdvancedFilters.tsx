@@ -53,6 +53,11 @@ export function AdvancedFiltersButton({ value, onApply }: AdvancedFiltersButtonP
         <span className="visually-hidden">Filtros avanzados</span>
       </button>
 
+      {/* Fondo de cierre -- solo se ve/actúa en móvil (ver .filters-popover-backdrop
+          en components.css), donde el popover pasa a ser una hoja de pantalla
+          completa; en escritorio queda invisible y no bloquea nada. */}
+      {open && <div className="filters-popover-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />}
+
       {open && (
         <div className="filters-popover" role="dialog" aria-label="Filtros avanzados">
           <div className="filters-popover__header">
