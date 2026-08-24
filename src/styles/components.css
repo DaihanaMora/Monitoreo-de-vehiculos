@@ -887,7 +887,9 @@
 }
 
 .status-card__toggle {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
   margin-top: var(--space-4);
   padding-top: var(--space-3);
@@ -899,7 +901,52 @@
 }
 
 .status-card__toggle:hover {
-  text-decoration: underline;
+  color: var(--color-accent-strong);
+}
+
+/* Flecha lineal que rota al desplegar (pedido explícito de Daihana) --
+   currentColor para seguir el color del botón sin un token aparte. */
+.status-card__toggle-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.status-card__toggle-icon--expanded {
+  transform: rotate(180deg);
+}
+
+/* Animación fluida al desplegar/ocultar los detalles -- técnica de
+   grid-template-rows 0fr->1fr: a diferencia de animar "height", funciona
+   sin JS y sin conocer de antemano la altura del contenido (que varía
+   según si el vehículo tiene o no coordenadas/rumbo). El contenido SIEMPRE
+   está en el DOM (ya no se monta/desmonta con {expanded && ...}) -- eso es
+   justo lo que permite animarlo en vez de aparecer/desaparecer de golpe. */
+.status-card__details-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-base) var(--ease-standard);
+}
+
+.status-card__details-wrapper--expanded {
+  grid-template-rows: 1fr;
+}
+
+.status-card__details-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.status-card__details-inner .status-list {
+  padding-top: var(--space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-card__toggle-icon,
+  .status-card__details-wrapper {
+    transition: none;
+  }
 }
 
 .status-list {

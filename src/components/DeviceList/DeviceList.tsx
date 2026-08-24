@@ -37,7 +37,13 @@ export function DeviceList({ devices, positions, selectedDeviceId, onSelectDevic
         const online = isOnline(device.status);
         const selected = device.id === selectedDeviceId;
         const position = positions.get(device.id);
-        const moving = isMoving(position);
+        // Bug real (Assets/imgs/1.png, 3.png): un vehículo FUERA DE LÍNEA
+        // con una última posición que traía velocidad > 0 se seguía
+        // mostrando "En movimiento" -- dato viejo, no lo que está pasando
+        // ahora. "En movimiento" solo tiene sentido si el dispositivo está
+        // reportando en este momento (online), sin importar qué diga la
+        // última posición conocida.
+        const moving = online && isMoving(position);
 
         return (
           <li key={device.id} className="device-list-item">

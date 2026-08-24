@@ -36,14 +36,22 @@ describe("<StatusCard />", () => {
 
   it("'Ver detalles del vehículo' expande identificador, coordenadas, rumbo y hora exacta -- nunca una ruta inventada (Traccar no la tiene)", async () => {
     const user = userEvent.setup();
-    render(<StatusCard device={device} positionState={withPosition} />);
+    const { container } = render(<StatusCard device={device} positionState={withPosition} />);
 
     const toggle = screen.getByRole("button", { name: "Ver detalles del vehículo" });
-    expect(screen.queryByText("Identificador")).not.toBeInTheDocument();
+    // El contenido vive siempre en el DOM (necesario para poder animar su
+    // despliegue con CSS puro -- grid-template-rows) -- lo que cambia es
+    // el estado de apertura, no la presencia. jsdom no calcula layout/CSS
+    // real, así que la señal verificable acá es aria-expanded + la clase
+    // del wrapper, no si el texto "existe" en el documento.
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(container.querySelector(".status-card__details-wrapper--expanded")).not.toBeInTheDocument();
+    expect(screen.getByText("Identificador")).toBeInTheDocument();
 
     await user.click(toggle);
 
-    expect(screen.getByRole("button", { name: "Ocultar detalles" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ocultar detalles" })).toHaveAttribute("aria-expanded", "true");
+    expect(container.querySelector(".status-card__details-wrapper--expanded")).toBeInTheDocument();
     expect(screen.getByText("Identificador")).toBeInTheDocument();
     expect(screen.getByText("TRC-1021")).toBeInTheDocument();
     expect(screen.getByText("Coordenadas")).toBeInTheDocument();
@@ -54,6 +62,7 @@ describe("<StatusCard />", () => {
     expect(screen.queryByText(/Ruta|Route/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Ocultar detalles" }));
-    expect(screen.queryByText("Identificador")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver detalles del vehículo" })).toHaveAttribute("aria-expanded", "false");
+    expect(container.querySelector(".status-card__details-wrapper--expanded")).not.toBeInTheDocument();
   });
 });

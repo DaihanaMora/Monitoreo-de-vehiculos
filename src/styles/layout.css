@@ -335,6 +335,35 @@
   .app-main--mobile-details .panel--map {
     height: calc(100vh - 3.5rem);
   }
+
+  /* Animación sutil al tocar el botón hamburguesa (pedido explícito de
+     Daihana). "display:none/block" no se puede animar con transition --
+     el panel que queda visible arranca de golpe, así que se le da una
+     animación (no transition) que corre una sola vez justo cuando pasa a
+     visible: al recibir display:none no había animación corriendo, así
+     que arranca limpia desde el fotograma 0 en cuanto la clase cambia. */
+  .app-main--mobile-list .panel--list,
+  .app-main--mobile-details .panel--map {
+    animation: mobile-view-in var(--duration-slow) var(--ease-decelerate);
+  }
+}
+
+@keyframes mobile-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main--mobile-list .panel--list,
+  .app-main--mobile-details .panel--map {
+    animation: none;
+  }
 }
 
 .placeholder-note {

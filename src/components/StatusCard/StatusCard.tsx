@@ -49,49 +49,75 @@ export function StatusCard({ device, positionState, floating = false }: StatusCa
           </dd>
         </div>
 
-        <PositionRows positionState={positionState} now={now} />
-
-        {expanded && position && (
-          <>
-            <div className="status-list__row">
-              <dt>Identificador</dt>
-              <dd className="mono">{device.uniqueId}</dd>
-            </div>
-            <div className="status-list__row">
-              <dt>Coordenadas</dt>
-              <dd className="mono">
-                {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)}
-              </dd>
-            </div>
-            <div className="status-list__row">
-              <dt>Rumbo</dt>
-              <dd className="mono">{Math.round(position.course)}°</dd>
-            </div>
-            <div className="status-list__row">
-              <dt>Hora exacta</dt>
-              <dd className="mono">
-                {new Date(position.fixTime).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-              </dd>
-            </div>
-          </>
-        )}
+        <PositionRows positionState={positionState} now={now} online={online} />
       </dl>
 
       {position && (
-        <button
-          type="button"
-          className="status-card__toggle"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? "Ocultar detalles" : "Ver detalles del vehículo"}
-        </button>
+        <>
+          <button
+            type="button"
+            className="status-card__toggle"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {/* Flecha lineal que rota 180° al desplegar (pedido explícito
+                de Daihana) -- currentColor sigue el color del botón. */}
+            <svg
+              className={`status-card__toggle-icon${expanded ? " status-card__toggle-icon--expanded" : ""}`}
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {expanded ? "Ocultar detalles" : "Ver detalles del vehículo"}
+          </button>
+
+          {/* Siempre montado (no {expanded && ...}) -- es justo lo que
+              permite animar el despliegue con CSS puro (grid-template-rows
+              0fr->1fr, ver components.css) en vez de que el contenido
+              aparezca/desaparezca de golpe. */}
+          <div className={`status-card__details-wrapper${expanded ? " status-card__details-wrapper--expanded" : ""}`}>
+            <div className="status-card__details-inner">
+              <dl className="status-list">
+                <div className="status-list__row">
+                  <dt>Identificador</dt>
+                  <dd className="mono">{device.uniqueId}</dd>
+                </div>
+                <div className="status-list__row">
+                  <dt>Coordenadas</dt>
+                  <dd className="mono">
+                    {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)}
+                  </dd>
+                </div>
+                <div className="status-list__row">
+                  <dt>Rumbo</dt>
+                  <dd className="mono">{Math.round(position.course)}°</dd>
+                </div>
+                <div className="status-list__row">
+                  <dt>Hora exacta</dt>
+                  <dd className="mono">
+                    {new Date(position.fixTime).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function PositionRows({ positionState, now }: { positionState: AsyncState<Position | null>; now: Date }) {
+function PositionRows({
+  positionState,
+  now,
+  online,
+}: {
+  positionState: AsyncState<Position | null>;
+  now: Date;
+  online: boolean;
+}) {
   if (positionState.status === "idle" || positionState.status === "loading") {
     return (
       <div className="status-list__row">
@@ -128,7 +154,10 @@ function PositionRows({ positionState, now }: { positionState: AsyncState<Positi
   }
 
   const { speedKmh, fixTime } = positionState.data;
-  const moving = isMoving(positionState.data);
+  // Mismo bug/fix que DeviceList.tsx: "En movimiento" solo tiene sentido
+  // si el dispositivo está reportando ahora mismo (online), no a partir de
+  // la última posición conocida cuando ya está fuera de línea.
+  const moving = online && isMoving(positionState.data);
   return (
     <>
       <div className="status-list__row status-card__hero">
