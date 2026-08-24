@@ -14,6 +14,10 @@ La experiencia está diseñada bajo el concepto de **Control Room**, priorizando
 
 **Video demo:** https://youtu.be/sSf-wZ1JGck 
 
+**Acceso:**
+Email:vatapah277@ebflyai.com
+password: 1234
+
 ---
 
 ## Objetivo
