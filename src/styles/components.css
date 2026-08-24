@@ -282,6 +282,85 @@
   border: var(--border-width) solid var(--color-border-strong);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-lg);
+  /* Entrada suave en vez de aparecer de golpe (pedido explícito de
+     Daihana) -- es un `animation`, no un `transition`, a propósito: el
+     popover se monta/desmonta con {open && ...} en el JSX, así que no hay
+     un estado "antes" que transicionar -- una animación SÍ corre sola
+     desde el fotograma 0 en cuanto el elemento aparece en el DOM. */
+  animation: filters-popover-in var(--duration-base) var(--ease-decelerate);
+}
+
+@keyframes filters-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bug real (Assets/imgs/errorMovil.png): en móvil, el ancla pequeña de
+   escritorio (272px, colgada del botón de filtro cerca del borde derecho)
+   quedaba superpuesta sobre la lista de vehículos en vez de comportarse
+   como un panel propio -- ni tapaba del todo ni dejaba ver bien nada
+   debajo. En pantallas angostas se comporta como una hoja que sube desde
+   abajo, a todo el ancho, con su propio scroll (el contenido -- 3 grupos +
+   acciones -- no siempre cabe en 80vh). */
+@media (max-width: 640px) {
+  .filters-popover {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    /* Mismo problema de contexto de apilamiento que ya resolvimos para
+       .user-menu__popover: .panel--list no tiene z-index propio, así que
+       un position:fixed acá adentro compara DIRECTO contra
+       .status-card--floating (z-index:1000, también fixed en móvil) en la
+       raíz -- necesita superarlo, no alcanza con var(--z-panel)=10. */
+    z-index: 1001;
+    /* En móvil es una hoja que sube desde abajo, no un dropdown que baja
+       -- misma técnica (animation en vez de transition), otra dirección. */
+    animation: filters-sheet-in var(--duration-base) var(--ease-decelerate);
+  }
+}
+
+@keyframes filters-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filters-popover {
+    animation: none;
+  }
+}
+
+/* Invisible/inerte en escritorio a propósito -- solo tiene sentido oscurecer
+   el resto de la pantalla cuando el popover pasa a ser una hoja de pantalla
+   completa (<640px). */
+.filters-popover-backdrop {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .filters-popover-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.45);
+  }
 }
 
 .filters-popover__header {
