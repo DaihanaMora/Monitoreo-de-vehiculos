@@ -406,24 +406,6 @@ El deployment puede realizarse conectando el repositorio de GitHub con Vercel. L
 
 ---
 
-# Uso de IA como copiloto
-
-Se utilizó IA como herramienta de apoyo durante el desarrollo, principalmente para exploración, generación de alternativas y asistencia en implementación.
-
-Las decisiones finales de:
-
-* Arquitectura.
-* UX/UI.
-* Accesibilidad.
-* Manejo de estados.
-* Jerarquía visual.
-* Componentización.
-* Tratamiento de errores.
-
-fueron revisadas y ajustadas manualmente para responder a los objetivos de la prueba técnica.
-
----
-
 #  Alcance de la solución
 
 La aplicación se enfoca deliberadamente en la tarea principal de monitoreo:
