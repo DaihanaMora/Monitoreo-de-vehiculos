@@ -20,14 +20,13 @@ interactivo, junto a una tarjeta de estado accesible y pulida.
 - [x] **Fase 2 — Proxy serverless (CORS-safe)**: lógica del proxy extraída a
       `api/_lib/traccarProxy.js` (única implementación); `api/traccar/[...path].js`
       es el adaptador delgado para Vercel.
-- [x] **Fase 2.5 — Portabilidad (Docker) + IaC**: `Dockerfile` multi-stage
+- [x] **Fase 2.5 — Portabilidad (Docker)**: `Dockerfile` multi-stage
       (dev/build/prod) + `docker-compose.yml`, con `server/index.js`
       (Express) como segundo adaptador delgado sobre la misma lógica de
       proxy — verificado de extremo a extremo contra el servidor real de
-      Traccar. `infra/` declara el proyecto de Vercel como código
-      (Terraform, provider `vercel/vercel`). Vercel Hobby (gratis, sin
-      tarjeta) sigue siendo el único destino de producción — Docker es
-      solo para portabilidad/desarrollo local.
+      Traccar. Vercel Hobby (gratis, sin tarjeta) sigue siendo el único
+      destino de producción, configurado a mano desde el dashboard —
+      Docker es solo para portabilidad/desarrollo local.
 - [x] **Fase 3 — Cliente de API tipado + autenticación + estado de carga**:
       `src/lib/traccarClient.ts` (errores tipados, conversión de nudos a
       km/h, formas de `Device`/`Position`), `useAuth` + `AuthProvider`
@@ -142,10 +141,6 @@ servidor real.
    repositorio → **Deploy** (el framework preset "Vite" se detecta solo;
    `vercel.json` ya define la función serverless).
 3. Cada `git push` posterior vuelve a desplegar automáticamente.
-
-**Opción como código (IaC):** ver `infra/README.md` — declara el mismo
-proyecto de Vercel (nombre, framework, runtime de Node, variables de
-entorno) con Terraform en vez de configurarlo a mano.
 
 ## Sistema de diseño — paleta y accesibilidad de color
 
