@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DEFAULT_ADVANCED_FILTERS, type AdvancedFiltersValue } from "./advancedFiltersTypes";
+import type { AdvancedFiltersValue } from "./advancedFiltersTypes";
 
 // Popover de filtros avanzados (Assets/displayComponentFilters.png). Los
 // tres grupos del mockup ya están completos: "Frescura del dato" y

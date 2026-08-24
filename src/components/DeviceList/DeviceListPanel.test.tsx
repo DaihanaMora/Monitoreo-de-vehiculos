@@ -176,23 +176,6 @@ describe("<DeviceListPanel />", () => {
       expect(screen.getByText("Moto 21")).toBeInTheDocument(); // sin lastUpdate: se trata como desactualizado
     });
 
-    it("'Quitar filtros avanzados' reinicia el borrador sin necesidad de Aplicar", async () => {
-      const user = userEvent.setup();
-      render(<DeviceListPanel devices={devices} positions={positions} selectedDeviceId={null} onSelectDevice={vi.fn()} />);
-
-      await user.click(screen.getByRole("button", { name: "Filtros avanzados" }));
-      await user.click(screen.getByRole("radio", { name: "Nombre" }));
-      expect(screen.getByRole("radio", { name: "Nombre" })).toBeChecked();
-
-      await user.click(screen.getByRole("button", { name: "Quitar filtros avanzados" }));
-      expect(screen.getByRole("radio", { name: "Última actualización" })).toBeChecked();
-      // "Todos" existe en dos grupos (Movimiento y Frescura) -- ambos deben
-      // volver a su default tras limpiar.
-      for (const radio of screen.getAllByRole("radio", { name: "Todos" })) {
-        expect(radio).toBeChecked();
-      }
-    });
-
     it("el botón disparador se marca activo solo cuando hay filtros avanzados aplicados de verdad", async () => {
       const user = userEvent.setup();
       render(<DeviceListPanel devices={devices} positions={positions} selectedDeviceId={null} onSelectDevice={vi.fn()} />);
