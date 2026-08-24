@@ -9,7 +9,10 @@ La experiencia está diseñada bajo el concepto de **Control Room**, priorizando
 ##  Demo y repositorio
 
 **Demo:** https://monitoreo-de-vehiculos.vercel.app/
+
 **Repositorio:** https://github.com/DaihanaMora/Monitoreo-de-vehiculos
+
+**Video demo:** https://youtu.be/sSf-wZ1JGck 
 
 ---
 
