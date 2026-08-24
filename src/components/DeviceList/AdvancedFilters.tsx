@@ -139,9 +139,6 @@ export function AdvancedFiltersButton({ value, onApply }: AdvancedFiltersButtonP
           </fieldset>
 
           <div className="filters-popover__actions">
-            <button type="button" className="filters-popover__link" onClick={() => setDraft(DEFAULT_ADVANCED_FILTERS)}>
-              Quitar filtros avanzados
-            </button>
             <button type="button" className="btn btn--primary" onClick={handleApply}>
               Aplicar filtros
             </button>
