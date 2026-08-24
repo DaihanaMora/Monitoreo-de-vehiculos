@@ -105,10 +105,30 @@
   margin: calc(var(--space-2) * -1) 0 0;
 }
 
-.login-form__pending {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+/* ---- Spinner (estado de carga EN un botón, no un reemplazo del botón) ---- */
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  /* currentColor a propósito -- así el spinner siempre coincide con el
+     color de texto del botón que lo contiene (claro sobre acento oscuro,
+     oscuro sobre acento claro) sin necesitar un token nuevo por tema. */
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
 }
 
 /* ---- ErrorPanel (spine AD-4) ---- */
@@ -503,6 +523,20 @@
 
 .device-row--selected .device-row__name {
   font-weight: var(--weight-bold);
+}
+
+/* El tinte verde de fondo (--color-online-dim) sobre una fila seleccionada
+   reduce el contraste efectivo del texto terciario por debajo de 3.8:1 --
+   sigue sin pasar AA aunque --color-text-tertiary ya se subió. En vez de
+   aclarar el token base al punto de igualar al secundario en TODOS lados
+   (perdería la jerarquía visual entre "dato de apoyo" y "dato secundario"),
+   se sube solo dentro de la fila seleccionada -- verificado ≥5.8:1 con el
+   tinte real de fondo. Hallazgo real de Daihana con la extensión "WCAG
+   Contrast checker" (imgs/1.png, imgs/3.png). */
+.device-row--selected .device-row__id,
+.device-row--selected .device-row__updated,
+.device-row--selected .device-row__motion {
+  color: var(--color-text-secondary);
 }
 
 .pulse-dot {
@@ -933,6 +967,35 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   text-align: center;
+}
+
+/* ---- Fantasma del panel de mapa mientras cargan los dispositivos ---- */
+.map-area-skeleton {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.map-area-skeleton__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map-area-skeleton__card {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 1;
+  width: 18.75rem;
+  max-width: calc(100% - var(--space-8));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 1.125rem;
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ---- Skeleton (shimmer) ---- */

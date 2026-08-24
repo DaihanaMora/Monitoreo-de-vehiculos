@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { TraccarError } from "../../lib/traccarClient";
 import { ErrorPanel } from "../ErrorPanel/ErrorPanel";
-import { Skeleton } from "../Skeleton/Skeleton";
 import { Logo } from "../Logo/Logo";
 
 export function LoginForm() {
@@ -65,16 +64,19 @@ export function LoginForm() {
           />
         </label>
 
-        {isLoading ? (
-          <div className="login-form__pending" aria-live="polite">
-            <Skeleton height="2.75rem" radius="var(--radius-full)" />
-            <span className="visually-hidden">Verificando credenciales…</span>
-          </div>
-        ) : (
-          <button type="submit" className="btn btn--primary">
-            Entrar
-          </button>
-        )}
+        {/* Antes el botón se reemplazaba por un Skeleton genérico al
+            enviar -- perdía la forma/color del botón y no comunicaba QUÉ
+            estaba pasando, solo "algo carga". Ahora el botón se queda,
+            se deshabilita, y muestra un spinner + texto de estado --
+            pedido explícito de Daihana ("loading al iniciar sesión en
+            el botón"). */}
+        <button type="submit" className="btn btn--primary" disabled={isLoading} aria-busy={isLoading}>
+          {isLoading && <span className="spinner" aria-hidden="true" />}
+          {isLoading ? "Iniciando sesión…" : "Entrar"}
+        </button>
+        <span className="visually-hidden" aria-live="polite">
+          {isLoading ? "Verificando credenciales…" : ""}
+        </span>
 
         {status === "error" && error && (
           <ErrorPanel

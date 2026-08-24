@@ -32,7 +32,17 @@
   /* ---- Texto (modo oscuro) ---- */
   --color-text-primary: #F2FBF7;
   --color-text-secondary: #9FB3AC;
-  --color-text-tertiary: #67766F;
+  /* Antes #67766F -- medía ~3.65:1 contra --color-surface-raised (falla AA,
+     que exige 4.5:1 para texto normal). Encontrado con la extensión "WCAG
+     Contrast checker" por Daihana sobre el subtítulo de login, el texto de
+     "Actualizado hace..." y el id/hora de cada fila de vehículo -- todos
+     usan este token. #7E8F88 da ~5.1:1 contra superficies normales. Sigue
+     sin pasar contra el fondo verde-tintado de una fila SELECCIONADA
+     (~3.8:1) -- ese caso puntual se resuelve en components.css cambiando
+     esos textos a --color-text-secondary dentro de .device-row--selected,
+     no forzando este token base a ser tan claro como el secundario en
+     todos lados (perdería la jerarquía visual). */
+  --color-text-tertiary: #7E8F88;
   --color-text-on-accent: #050505;
 
   /* ---- Acento y estados semánticos (modo oscuro) ---- */
@@ -129,7 +139,8 @@
 
   --color-text-primary: #0A0F0C;
   --color-text-secondary: #4B5D56;
-  --color-text-tertiary: #7C8D86;
+  /* Antes #7C8D86 -- ~3.49:1 contra blanco, falla AA. #5B6C65 da ~5.6:1. */
+  --color-text-tertiary: #5B6C65;
   --color-text-on-accent: #FFFFFF;
 
   --color-accent: var(--mint-800);

@@ -27,6 +27,37 @@
   letter-spacing: -0.01em;
 }
 
+/* Alterna entre lista/detalle en móvil -- oculto en escritorio, donde ambos
+   paneles siempre están visibles a la vez (ver .app-main--mobile-* abajo). */
+.hamburger-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+}
+
+.hamburger-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.hamburger-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 900px) {
+  .hamburger-toggle {
+    display: inline-flex;
+  }
+}
+
 .app-brand__divider {
   width: var(--border-width);
   height: 1.75rem;
@@ -206,6 +237,27 @@
     overflow-y: visible;
     border-right: none;
     border-top: var(--border-width) solid var(--color-border);
+  }
+
+  /* Una vista a la vez en móvil (bug real: la tarjeta flotante del mapa,
+     fija a la ventana, tapaba permanentemente parte de la lista -- hacer
+     scroll no la movía). Selectores de 2 clases: ganan por especificidad
+     sobre .panel--map/.panel--list de arriba sin depender del orden en el
+     archivo (a diferencia del bug de cascada que ya resolvimos antes). */
+  .app-main--mobile-list .panel--map {
+    display: none;
+  }
+
+  .app-main--mobile-details .panel--list {
+    display: none;
+  }
+
+  /* En la vista "details" el mapa ya no comparte pantalla con la lista --
+     no hay motivo para mantenerlo compacto (16rem, pensado para dejarle
+     espacio a la lista debajo). Usa el alto completo disponible, si no
+     queda un vacío feo entre el mapa y la tarjeta flotante. */
+  .app-main--mobile-details .panel--map {
+    height: calc(100vh - 3.5rem);
   }
 }
 

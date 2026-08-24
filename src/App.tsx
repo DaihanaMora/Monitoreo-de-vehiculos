@@ -15,6 +15,7 @@ import { MapView } from "./components/MapView/MapView";
 import { StatusCard } from "./components/StatusCard/StatusCard";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import { Logo } from "./components/Logo/Logo";
+import { Skeleton } from "./components/Skeleton/Skeleton";
 
 function OfflineBanner() {
   const online = useOnlineStatus();
@@ -26,10 +27,45 @@ function OfflineBanner() {
   );
 }
 
+/** Fantasma del panel de mapa mientras useDevices está en "loading" -- antes
+ * este panel no mostraba nada coherente en ese momento (el texto estático
+ * "Selecciona un vehículo" aparecía antes de que hubiera datos, lo cual no
+ * tiene sentido), mientras que la lista sí tenía su propio skeleton. Ahora
+ * todo el tablero se lee como "cargando" de forma consistente (pedido
+ * explícito de Daihana: "skeleton al cargar la plataforma"). */
+function MapAreaSkeleton() {
+  return (
+    <div className="map-area-skeleton" aria-hidden="true">
+      <Skeleton className="map-area-skeleton__canvas" width="100%" height="100%" radius="0" />
+      <div className="map-area-skeleton__card">
+        <Skeleton width="60%" height="1.1rem" />
+        <Skeleton width="40%" height="2rem" />
+        <Skeleton width="80%" height="0.9rem" />
+      </div>
+    </div>
+  );
+}
+
 function ControlRoom() {
   const { user, logout } = useAuth();
   const devices = useDevices();
   const [explicitSelection, setExplicitSelection] = useState<number | null>(null); // spine AD-12: owned here, no Context
+
+  // Vista activa en móvil (<900px, ver layout.css): 'list' o 'details'.
+  // Bug real reportado por Daihana (imgs/movil.png): la tarjeta de estado
+  // flotante (position:fixed, hasta 60vh) tapaba permanentemente parte de
+  // la lista de vehículos -- hacer scroll no la movía porque está fija a
+  // la ventana, no al documento. En vez de competir por espacio, ahora
+  // móvil muestra UNA vista a la vez, como ya proponía el mockup original
+  // (Assets/.../FleetMonitor.dc.html, mobileSheet 'list'/'details') que
+  // se había simplificado de más en el rediseño. Sin efecto en escritorio
+  // -- ese layout sigue mostrando ambos paneles siempre (ver media query).
+  const [mobileView, setMobileView] = useState<"list" | "details">("list");
+
+  function selectDevice(id: number) {
+    setExplicitSelection(id);
+    setMobileView("details"); // no-op visual en escritorio, relevante solo <900px
+  }
 
   // Selección efectiva derivada durante el render (no vía efecto+setState):
   // si el usuario ya eligió algo, se respeta; si no, el primer dispositivo
@@ -55,6 +91,19 @@ function ControlRoom() {
 
       <header className="app-header">
         <div className="app-brand">
+          {/* Solo visible <900px (ver layout.css) -- alterna entre ver la
+              lista completa y ver el detalle del vehículo seleccionado,
+              en vez de que compitan por la misma pantalla. */}
+          <button
+            type="button"
+            className="hamburger-toggle"
+            aria-label={mobileView === "list" ? "Ver detalles del vehículo" : "Ver lista de vehículos"}
+            onClick={() => setMobileView((v) => (v === "list" ? "details" : "list"))}
+          >
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
           <Logo height="2.25rem" />
           <span className="app-brand__divider" aria-hidden="true" />
           <span className="app-brand__session">
@@ -81,7 +130,7 @@ function ControlRoom() {
         </div>
       </header>
 
-      <main id="main-content" className="app-main">
+      <main id="main-content" className={`app-main app-main--mobile-${mobileView}`}>
         <section className="panel panel--list" aria-labelledby="devices-heading">
           {/* Visualmente oculto a propósito: Assets/desktop1.png no muestra un
               título "Vehículos" sobre la barra lateral, arranca directo en el
@@ -100,7 +149,7 @@ function ControlRoom() {
               devices={devices.data}
               positions={allPositions}
               selectedDeviceId={selectedDeviceId}
-              onSelectDevice={setExplicitSelection}
+              onSelectDevice={selectDevice}
             />
           )}
         </section>
@@ -109,7 +158,9 @@ function ControlRoom() {
           <h2 id="map-heading" className="visually-hidden">
             Mapa del vehículo
           </h2>
-          {selectedDevice ? (
+          {devices.status === "loading" || devices.status === "idle" ? (
+            <MapAreaSkeleton />
+          ) : selectedDevice ? (
             <>
               <MapView
                 positionState={positionState}
