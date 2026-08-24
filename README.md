@@ -1,169 +1,438 @@
-# Monitor de Vehículo en Tiempo Real — Control Room
+#  Monitor de Vehículo en Tiempo Real — Control Room
 
-Prueba técnica — Design Engineer (UX/UI). SPA que se conecta a la API pública
-de [Traccar](https://www.traccar.org/) para autenticarse, listar dispositivos,
-seleccionarlos y visualizar su posición en tiempo real sobre un mapa
-interactivo, junto a una tarjeta de estado accesible y pulida.
+> **Prueba técnica · Design Engineer (UX/UI)**
 
-> Reinicio de stack: el proyecto se reescribió desde cero sobre React + Vite
-> + TypeScript (ver decisión y trade-offs en la spine de arquitectura). El
-> proxy serverless hacia Traccar se conservó tal cual, por ser Node puro,
-> independiente del framework del frontend.
+Aplicación web SPA para el monitoreo de vehículos en tiempo real, desarrollada sobre **React + TypeScript + Vite** y conectada a la API de **Traccar**.
 
-## Estado del desarrollo
+La experiencia está diseñada bajo el concepto de **Control Room**, priorizando la visualización rápida del estado del vehículo, su ubicación y la información necesaria para tomar decisiones sin sobrecargar la interfaz.
 
-- [x] **Fase 1 — Scaffold + sistema de diseño**: proyecto Vite + React 19 +
-      TypeScript, tokens de diseño (color, tipografía, espaciado, sombras,
-      movimiento) para modo claro/oscuro ya con la dirección visual final
-      ("Calma Operativa" — superficies suavizadas, tipografía Manrope), shell
-      de la app con toggle de tema funcional.
-- [x] **Fase 2 — Proxy serverless (CORS-safe)**: lógica del proxy extraída a
-      `api/_lib/traccarProxy.js` (única implementación); `api/traccar/[...path].js`
-      es el adaptador delgado para Vercel.
-- [x] **Fase 2.5 — Portabilidad (Docker)**: `Dockerfile` multi-stage
-      (dev/build/prod) + `docker-compose.yml`, con `server/index.js`
-      (Express) como segundo adaptador delgado sobre la misma lógica de
-      proxy — verificado de extremo a extremo contra el servidor real de
-      Traccar. Vercel Hobby (gratis, sin tarjeta) sigue siendo el único
-      destino de producción, configurado a mano desde el dashboard —
-      Docker es solo para portabilidad/desarrollo local.
-- [x] **Fase 3 — Cliente de API tipado + autenticación + estado de carga**:
-      `src/lib/traccarClient.ts` (errores tipados, conversión de nudos a
-      km/h, formas de `Device`/`Position`), `useAuth` + `AuthProvider`
-      (spine AD-3), pantalla de login con estado de carga (`Skeleton`) y
-      error accesible (`ErrorPanel`). Efecto colateral: se fijó Vitest +
-      Testing Library como herramienta de testing (9 pruebas reales,
-      incluida una regresión directa del hallazgo del cuerpo 401 en texto
-      plano de Traccar).
-- [x] **Fase 4 — Lista y selector de dispositivos**: `useDevices` (estado
-      canónico `AsyncState<T>`, spine AD-13), `DeviceList` con indicador
-      en línea/fuera de línea, selección automática del primer vehículo
-      (derivada durante el render, no vía `useEffect`), estado de carga y
-      de error (con "Reintentar") reales.
-- [x] **Fase 5 — Mapa interactivo + marcador vectorial personalizado**:
-      `MapView` (Leaflet, tiles de OpenStreetMap) + marcador SVG propio con
-      rotación por rumbo (`vehicleMarkerIcon.ts`, animada por CSS sobre un
-      nodo separado del que mueve Leaflet — spine AD-6), anillo de estado
-      en línea/fuera de línea. Se adelantó `useVehiclePosition` de la Fase
-      7 porque el mapa necesitaba datos reales de posición para tener
-      sentido.
-- [x] **Fase 6 — Tarjeta de estado**: `StatusCard` con `<dl>/<dt>/<dd>` real,
-      `aria-live="polite"` en el contenedor (velocidad y última
-      actualización cambian solas cada 5s). Velocidad siempre en km/h
-      (nunca nudos crudos), última actualización humanizada
-      ("Hace 8 segundos", `relativeTime.ts`), fila explícita "Sin datos de
-      posición" cuando corresponde (spine AD-13) en vez de un `<dd>` vacío.
-- [x] ~~Fase 7 — Polling en vivo~~ ya cubierta por Fase 5 (sondeo cada 5s);
-      quedan pendientes solo las micro-interacciones adicionales.
-- [x] **Fase 8 — Estado de error resiliente**: `ErrorBoundary` (React,
-      atrapa cualquier crash de render de la app entera, con recuperación
-      vía "Reintentar") + aviso global de "sin conexión a Internet"
-      (`useOnlineStatus`, distinto de un error de Traccar — uno es tu red,
-      el otro es su servidor). Los estados de error por sección (login,
-      dispositivos, mapa, tarjeta de estado) ya existían desde las fases
-      anteriores.
-- [ ] Fase 9 — Auditoría de accesibilidad (foco, teclado, contraste).
-- [ ] Fase 10 — Pulido responsivo (móvil/escritorio).
-- [ ] Fase 11 — Despliegue final (Vercel) + variables de entorno.
+##  Demo y repositorio
 
-Ver la columna vertebral de arquitectura (invariantes, contrato de errores,
-formas de datos, convenciones) en
-`_bmad-output/planning-artifacts/architecture/architecture-Prueba tecnica-2026-08-19/ARCHITECTURE-SPINE.md`
-del repo raíz de la prueba técnica.
+**Demo:** https://monitoreo-de-vehiculos.vercel.app/
+**Repositorio:** https://github.com/DaihanaMora/Monitoreo-de-vehiculos
 
-## Stack técnico
+---
 
-- **React 19** + **Vite 8** + **TypeScript** (línea estable pre-7.0, ver
-  spine — TS 7.0 es demasiado reciente para las dependencias de tooling que
-  usa este proyecto).
-- **Leaflet** para el mapa interactivo.
-- **CSS Custom Properties** como *design tokens* (`src/styles/tokens.css`) —
-  sin CSS-in-JS, sin Tailwind.
-- Backend: una única función serverless en Vercel
-  (`api/traccar/[...path].js`) que actúa como proxy hacia Traccar para
-  evitar problemas de CORS.
-- Sin librería de estado externa (Redux/Zustand/React Query) por decisión
-  explícita — ver spine, revisable si la complejidad lo justifica.
+## Objetivo
 
-## Cómo correrlo localmente
+Diseñar y desarrollar una interfaz de monitoreo que permita a un operador:
+
+* Autenticarse en la plataforma.
+* Consultar los vehículos disponibles.
+* Buscar y seleccionar un vehículo.
+* Visualizar su ubicación actual en un mapa.
+* Consultar velocidad y estado de conexión.
+* Identificar cuándo fue recibida la última posición.
+* Monitorear actualizaciones periódicas de la información.
+* Identificar estados sin datos o errores de conexión.
+* Recuperarse de errores mediante acciones claras.
+* Utilizar la aplicación en desktop, tablet y mobile.
+* Alternar entre modo claro y oscuro.
+
+La interfaz fue pensada para un contexto de **monitoreo prolongado**, donde la información debe ser fácil de escanear, mantener una jerarquía clara y generar la menor carga cognitiva posible.
+
+---
+
+## Funcionalidades principales
+
+### Explorador de vehículos
+
+* Listado de dispositivos disponibles desde Traccar.
+* Selección de vehículo para iniciar el monitoreo.
+* Selección automática del primer vehículo disponible.
+* Búsqueda de vehículos.
+* Filtro por estado de conexión.
+* Ordenamiento de resultados.
+* Indicadores visuales de estado Online / Offline.
+* Estados de loading, vacío y error.
+
+###  Monitoreo en tiempo real
+
+* Consulta periódica de la posición del vehículo seleccionado.
+* Actualización cada **5 segundos**.
+* Visualización de velocidad actual.
+* Conversión de velocidad de nudos a **km/h**.
+* Visualización de la última actualización.
+* Formato de tiempo relativo para facilitar la lectura.
+* Manejo explícito de vehículos sin datos de posición.
+
+### Mapa interactivo
+
+* **Leaflet + OpenStreetMap**.
+* Centrado automático sobre el vehículo seleccionado.
+* Marcador vectorial SVG personalizado.
+* Rotación del marcador según el rumbo (`course`) recibido desde Traccar.
+* Animación suave del marcador para evitar movimientos bruscos.
+* Indicador visual del estado de conexión.
+
+### Estados y recuperación
+
+La interfaz contempla diferentes estados durante el ciclo de vida de la aplicación:
+
+* Loading / Skeleton.
+* Error de autenticación.
+* Error al obtener vehículos.
+* Error al obtener posición.
+* Vehículo sin datos de posición.
+* Sin conexión a Internet.
+* Error global de renderizado.
+* Acciones de **Retry / Reintentar**.
+
+Los errores se presentan de forma contextual para que el usuario pueda entender qué ocurrió y qué acción puede realizar.
+
+### Modo claro y oscuro
+
+* Light Mode.
+* Dark Mode.
+* Design Tokens mediante CSS Custom Properties.
+* Jerarquía y contraste adaptados a ambos temas.
+* Soporte para `prefers-reduced-motion`.
+
+### Responsive
+
+La interfaz se adapta a:
+
+* Desktop.
+* Tablet.
+* Mobile.
+
+La distribución cambia según el espacio disponible, manteniendo como prioridad la información operacional y el contexto geográfico.
+
+---
+
+# Decisiones UX/UI
+
+## Map-first
+
+El mapa funciona como el área principal de la experiencia porque la tarea principal del operador es **localizar y monitorear el vehículo**.
+
+La interfaz sigue una jerarquía sencilla:
+
+**Encontrar → Seleccionar → Localizar → Interpretar**
+
+El explorador permite encontrar rápidamente un vehículo, mientras que el mapa y la tarjeta de estado proporcionan el contexto necesario para interpretar su situación.
+
+---
+
+## Jerarquía de información
+
+La información se organiza según su relevancia para la operación:
+
+1. Identificación del vehículo.
+2. Estado de conexión.
+3. Ubicación.
+4. Velocidad.
+5. Última actualización.
+6. Información secundaria.
+
+Esto permite realizar un escaneo rápido sin obligar al operador a recorrer diferentes secciones de la interfaz.
+
+---
+
+## Enfoque Control Room
+
+La interfaz evita convertirse en un dashboard cargado de métricas que no aportan directamente a la tarea.
+
+En lugar de mostrar grandes cantidades de información secundaria, se priorizan:
+
+* Estado actual.
+* Ubicación.
+* Velocidad.
+* Recencia de los datos.
+* Disponibilidad de conexión.
+* Recuperación ante errores.
+
+El objetivo es mantener una experiencia **clara, calmada y operacional**, especialmente útil para escenarios de monitoreo prolongado.
+
+---
+
+## Reconocimiento antes que memoria
+
+La información importante permanece visible y contextual.
+
+El operador no necesita recordar:
+
+* Cuándo se recibió la última posición.
+* Si el vehículo está conectado.
+* Qué vehículo está seleccionado.
+* Qué velocidad registra.
+
+Estos datos se presentan directamente en la interfaz.
+
+---
+
+# Accesibilidad
+
+La accesibilidad fue considerada como parte del diseño y no como una etapa posterior.
+
+La implementación toma **WCAG 2.1 AA** como referencia.
+
+### HTML semántico
+
+La información de estado utiliza una estructura semántica mediante `<dl>`, `<dt>` y `<dd>`:
+
+```html
+<dl>
+  <dt>Status</dt>
+  <dd>Online</dd>
+
+  <dt>Speed</dt>
+  <dd>38 km/h</dd>
+
+  <dt>Last update</dt>
+  <dd>Hace 3 segundos</dd>
+</dl>
+```
+
+### Otras consideraciones
+
+* Estados de foco visibles mediante `:focus-visible`.
+* Navegación mediante teclado.
+* Enlace de **Skip to content**.
+* Mensajes de error comprensibles.
+* Estados dinámicos anunciables mediante `aria-live`.
+* Contraste de color considerado para texto y componentes.
+* Soporte para `prefers-reduced-motion`.
+* Uso de HTML semántico.
+* Estados de loading y error comunicados visualmente.
+
+---
+
+#  Arquitectura
+
+La aplicación utiliza una arquitectura sencilla, orientada a mantener una separación clara entre interfaz, lógica de negocio y comunicación con la API.
+
+```text
+┌──────────────────────────────┐
+│          React UI            │
+│                              │
+│  Login                       │
+│  Vehicle Explorer            │
+│  Map                         │
+│  Status Card                 │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       Traccar Client         │
+│                              │
+│  Authentication              │
+│  Devices                     │
+│  Positions                   │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│     Serverless Proxy         │
+│          Vercel              │
+│                              │
+│       /api/traccar/*         │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│        Traccar API           │
+└──────────────────────────────┘
+```
+
+El frontend no consume directamente el servidor de Traccar. Las solicitudes pasan por un **proxy serverless**, evitando problemas de CORS y manteniendo la comunicación centralizada.
+
+---
+
+#  Stack tecnológico
+
+| Tecnología            | Uso                         |
+| --------------------- | --------------------------- |
+| React 19              | Construcción de la interfaz |
+| TypeScript            | Tipado estático             |
+| Vite                  | Desarrollo y build          |
+| Leaflet               | Mapa interactivo            |
+| OpenStreetMap         | Cartografía                 |
+| CSS Custom Properties | Design Tokens               |
+| Vitest                | Testing                     |
+| Testing Library       | Pruebas de componentes      |
+| Vercel                | Deployment                  |
+| Traccar               | Fuente de datos GPS         |
+| Node.js               | Proxy / backend             |
+
+No se utiliza una librería externa de estado como Redux, Zustand o React Query. El estado se mantiene mediante las herramientas nativas de React, manteniendo la arquitectura proporcional al alcance de la aplicación.
+
+---
+
+# Autenticación y datos
+
+La autenticación se realiza contra Traccar utilizando HTTP Basic Authentication.
+
+Las credenciales:
+
+* Se mantienen únicamente en memoria durante la sesión.
+* No se almacenan en `localStorage`.
+* No son expuestas directamente al frontend como configuración permanente.
+
+El frontend utiliza los siguientes endpoints internos:
+
+```text
+POST /api/traccar/session
+GET  /api/traccar/devices
+GET  /api/traccar/positions?deviceId={id}
+```
+
+El proxy utiliza como servidor Traccar por defecto:
+
+```text
+https://demo4.traccar.org
+```
+
+Este valor puede configurarse mediante la variable de entorno:
+
+```env
+TRACCAR_SERVER_URL=https://demo4.traccar.org
+```
+
+---
+
+# Instalación y ejecución local
+
+## Requisitos
+
+* Node.js
+* npm
+
+## Instalación
 
 ```bash
+git clone https://github.com/DaihanaMora/Monitoreo-de-vehiculos.git
+
+cd Monitoreo-de-vehiculos
+
 npm install
+```
+
+## Variables de entorno
+
+Crear un archivo `.env` tomando como referencia:
+
+```bash
+.env.example
+```
+
+Variable disponible:
+
+```env
+TRACCAR_SERVER_URL=https://demo4.traccar.org
+```
+
+## Desarrollo
+
+```bash
 npm run dev
 ```
 
-Abre la URL que indique Vite (por defecto `http://localhost:5173`).
+Luego abrir la URL indicada por Vite, normalmente:
 
-Para producción:
-
-```bash
-npm run build
-npm run preview
+```text
+http://localhost:5173
 ```
 
-Pruebas (Vitest + Testing Library):
+---
+
+# Testing
+
+El proyecto utiliza **Vitest + Testing Library**.
+
+Ejecutar las pruebas:
 
 ```bash
-npm run test          # una corrida
-npm run test:watch    # modo watch
+npm run test
 ```
 
-## Variables de entorno / endpoints
-
-| Variable              | Obligatoria | Por defecto                  | Descripción                                   |
-|-----------------------|:-----------:|-------------------------------|------------------------------------------------|
-| `TRACCAR_SERVER_URL`  | No          | `https://demo4.traccar.org`   | Servidor Traccar al que apunta el proxy serverless. |
-
-Ver `.env.example`. El frontend nunca llama a Traccar directamente: siempre
-pasa por `/api/traccar/*` (mismo origen, sin CORS). Endpoints usados:
-`POST /api/session`, `GET /api/devices`, `GET /api/positions?deviceId=`.
-
-Autenticación: HTTP Basic por petición. Las credenciales viven solo en
-memoria durante la sesión — nunca se persisten en `localStorage`.
-
-## Cómo correrlo con Docker (portabilidad, no es el destino de producción)
+Modo watch:
 
 ```bash
-docker compose up               # modo dev, hot-reload en http://localhost:5173
-docker compose --profile prod up prod   # build de producción local, http://localhost:8080
+npm run test:watch
 ```
 
-Ambos targets del `Dockerfile` sirven el mismo proxy hacia Traccar
-(`api/_lib/traccarProxy.js`) que la función de Vercel — verificado
-corriendo el contenedor y probando `GET /api/traccar/devices` contra el
-servidor real.
+Las pruebas cubren, entre otros aspectos:
 
-## Cómo desplegarlo
+* Autenticación.
+* Manejo de respuestas de la API.
+* Estados de error.
+* Conversión de velocidad.
+* Comportamiento de componentes.
 
-**Opción manual:**
-1. `git push` a la rama principal.
-2. En [vercel.com](https://vercel.com), **Add New Project** → importa este
-   repositorio → **Deploy** (el framework preset "Vite" se detecta solo;
-   `vercel.json` ya define la función serverless).
-3. Cada `git push` posterior vuelve a desplegar automáticamente.
+---
 
-## Sistema de diseño — paleta y accesibilidad de color
+# Docker
 
-Paleta de marca (Simón Movilidad): negro `#050505` + acento menta `#75FBC6`,
-con la dirección visual final "Calma Operativa" suavizando las superficies
-grandes para reducir fatiga visual en turnos de 24h: `#0E1210` (oscuro) /
-`#F7FAF9` (claro) en vez de negro/blanco puro a pantalla completa. Todas las
-combinaciones texto/fondo usadas fueron verificadas contra WCAG 2.1 AA
-(≥ 4.5:1 texto normal, ≥ 3:1 componentes UI / foco).
+El proyecto también incluye configuración para ejecutar la aplicación mediante Docker.
 
-## Accesibilidad
+### Desarrollo
 
-- `outline: none` está prohibido sin reemplazo — ver `:focus-visible` en
-  `src/styles/base.css`, con anillo de foco de alto contraste en ambos temas.
-- Enlace "saltar al contenido" como primer elemento enfocable.
-- HTML semántico desde el primer commit; la Tarjeta de Estado usará
-  `<dl>/<dt>/<dd>` (Fase 6).
-- `prefers-reduced-motion` respetado: las duraciones de transición se anulan
-  para usuarios que lo solicitan.
+```bash
+docker compose up
+```
 
-## Uso de IA como copiloto
+Disponible normalmente en:
 
-Este proyecto usa IA (Claude) como copiloto de desarrollo, tal como permite
-el enunciado de la prueba. En el video de presentación se detalla qué
-prompts se usaron y qué tuvo que corregirse manualmente para cumplir los
-estándares de UX, estética y accesibilidad exigidos.
+```text
+http://localhost:5173
+```
+
+### Producción local
+
+```bash
+docker compose --profile prod up prod
+```
+
+Disponible normalmente en:
+
+```text
+http://localhost:8080
+```
+
+Docker se incluye como alternativa de portabilidad y desarrollo local. El deployment principal de producción se realiza mediante Vercel.
+
+---
+
+# Deployment
+
+La aplicación está desplegada actualmente en Vercel:
+
+**Demo:** https://monitoreo-de-vehiculos.vercel.app/
+
+El proyecto utiliza una función serverless como proxy para comunicarse con Traccar.
+
+El deployment puede realizarse conectando el repositorio de GitHub con Vercel. Los nuevos cambios enviados a la rama principal pueden generar automáticamente un nuevo deployment.
+
+---
+
+# Uso de IA como copiloto
+
+Se utilizó IA como herramienta de apoyo durante el desarrollo, principalmente para exploración, generación de alternativas y asistencia en implementación.
+
+Las decisiones finales de:
+
+* Arquitectura.
+* UX/UI.
+* Accesibilidad.
+* Manejo de estados.
+* Jerarquía visual.
+* Componentización.
+* Tratamiento de errores.
+
+fueron revisadas y ajustadas manualmente para responder a los objetivos de la prueba técnica.
+
+---
+
+#  Alcance de la solución
+
+La aplicación se enfoca deliberadamente en la tarea principal de monitoreo:
+
+> **Encontrar → seleccionar → localizar → interpretar**
+
+Por esta razón, no se incorporaron dashboards, métricas históricas o funcionalidades adicionales que no fueran necesarias para resolver el objetivo principal de la prueba.
+
+La intención es demostrar cómo una interfaz puede manejar información operacional en tiempo real manteniendo una experiencia **simple, accesible, responsive y orientada a la tarea**.
+
+---
+
